@@ -474,10 +474,17 @@ def _wav_bytes(audio):
     return buf.getvalue()
 
 
+def _drop_prompt_echo(text):
+    """Bỏ kết quả chỉ là lặp lại câu gợi ý (Whisper bịa khi không nghe rõ)."""
+    t = re.sub(r"[\W_]+", " ", text.lower()).strip()
+    hint = re.sub(r"[\W_]+", " ", WHISPER_HINT_VI.lower())
+    return "" if t and t in hint else text
+
+
 def transcribe_cloud(audio, lang):
     audio = _normalize(audio)
     t0 = time.time()
-    kw = {"prompt": WHISPER_HINT_VI} if lang == 'vi' else {}
+    kw = {}                                     # KHÔNG truyền prompt: Whisper hay lặp lại đúng câu gợi ý khi âm thanh nhỏ/không rõ
     if lang:
         kw["language"] = lang
     r = groq_client.audio.transcriptions.create(
@@ -485,7 +492,7 @@ def transcribe_cloud(audio, lang):
         temperature=0.0, response_format="verbose_json", **kw)
     print(f"[Groq] nhận diện mất {time.time() - t0:.1f}s cho {audio.size / FS:.1f}s âm thanh")
     detected = lang or _LANG_NAME.get(str(getattr(r, "language", "")).lower(), 'en')
-    return (r.text or "").strip(), detected
+    return _drop_prompt_echo((r.text or "").strip()), detected
 
 
 def transcribe(audio, lang):
@@ -509,7 +516,7 @@ def transcribe_local(audio, lang, warmup=False):
                                       temperature=0.0, initial_prompt=prompt, condition_on_previous_text=False,
                                       without_timestamps=True, vad_filter=not warmup,
                                       vad_parameters={"min_silence_duration_ms": 700})
-        text = "".join(s.text for s in segs).strip()
+        text = _drop_prompt_echo("".join(s.text for s in segs).strip())
         print(f"[Whisper] nhận diện mất {time.time() - t0:.1f}s cho {audio.size / FS:.1f}s âm thanh")
         return text, (lang or info.language or 'vi')
     r = stt_model.transcribe(audio, language=lang, fp16=False, temperature=0.0,
