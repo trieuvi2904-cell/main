@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Lễ tân A.I - Fairy Garden Villa.
 
-Luồng xử lý: giữ phím F2-F7 để nói -> nhả phím -> Whisper (faster-whisper) -> Claude (stream)
+Luồng xử lý: giữ phím để nói -> nhả phím -> Whisper (faster-whisper) -> Claude (stream)
 -> đọc từng câu bằng edge-tts (dự phòng gTTS) ngay khi câu đầu tiên sẵn sàng.
 """
 import os
@@ -146,19 +146,19 @@ MSG = {
         'es': "[Sistema] Interrumpiendo la voz de la IA a petición del huésped.",
         'fr': "[Système] Interruption de la voix de l'IA à la demande du client."},
     'help_title': {
-        'vi': "=== ĐÃ CHUYỂN SANG CHẾ ĐỘ: TIẾNG VIỆT (F2) ===",
-        'en': "=== SWITCHED TO MODE: ENGLISH (F3) ===",
-        'zh': "=== 已切换至模式：中文 (F4) ===",
-        'es': "=== CAMBIADO AL MODO: ESPAÑOL (F5) ===",
-        'fr': "=== PASSÉ EN MODE : FRANÇAIS (F6) ===",
-        'auto': "=== CHẾ ĐỘ TỰ ĐỘNG NHẬN DIỆN (F7) ==="},
+        'vi': "=== ĐÃ CHUYỂN SANG CHẾ ĐỘ: TIẾNG VIỆT ===",
+        'en': "=== SWITCHED TO MODE: ENGLISH ===",
+        'zh': "=== 已切换至模式：中文 ===",
+        'es': "=== CAMBIADO AL MODO: ESPAÑOL ===",
+        'fr': "=== PASSÉ EN MODE : FRANÇAIS ===",
+        'auto': "=== CHẾ ĐỘ TỰ ĐỘNG NHẬN DIỆN ==="},
     'help_body': {
-        'vi': "Cách sử dụng tại quầy: Nhấn và GIỮ phím F2, nói xong thì thả ra + đợi thêm 1s để hệ thống xử lý.",
-        'en': "How to use at the counter: Press and HOLD F3, speak, then release and wait 1s for processing.",
-        'zh': "柜台使用方法：按住 F4 键说话，说完后松开并等待 1 秒进行处理。",
-        'es': "Cómo usar en el mostrador: Mantenga presionada la tecla F5, hable, luego suelte y espere 1s.",
-        'fr': "Comment utiliser au comptoir : Appuyez et MAINTENEZ F6, parlez, puis relâchez.",
-        'auto': "How to use at the counter: Press and HOLD F7, speak, then release and wait 1s for processing."},
+        'vi': "Cách sử dụng tại quầy: Nhấn và GIỮ phím, nói xong thì thả ra + đợi thêm 1s để hệ thống xử lý.",
+        'en': "How to use at the counter: Press and HOLD the key, speak, then release and wait 1s for processing.",
+        'zh': "柜台使用方法：按住按键说话，说完后松开并等待 1 秒进行处理。",
+        'es': "Cómo usar en el mostrador: Mantenga presionada la tecla, hable, luego suelte y espere 1s.",
+        'fr': "Comment utiliser au comptoir : Appuyez et MAINTENEZ la touche, parlez, puis relâchez.",
+        'auto': "How to use at the counter: Press and HOLD the key, speak, then release and wait 1s for processing."},
     'recording': {
         'vi': "[Hệ thống] Đang thu âm...", 'en': "[System] Recording audio...", 'zh': "[系统] 正在录音...",
         'es': "[Sistema] Grabando audio...", 'fr': "[Système] Enregistrement audio..."},
