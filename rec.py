@@ -195,26 +195,21 @@ ACK_PHRASES = {
     'ru': "Хорошо, я получил ваш вопрос.", 'th': "รับทราบค่ะ ฉันได้รับคำถามของคุณแล้ว",
     'tl': "Sige, natanggap ko na ang inyong tanong.", 'ms': "Baik, saya sudah menerima soalan anda.",
     'hi': "ठीक है, मुझे आपका प्रश्न मिल गया है।", 'it': "Capito, ho ricevuto la sua domanda."}
-WARN_QUICK = {
-    'vi': "Xin lỗi, bạn vừa nhấn và nhả phím thu âm quá nhanh, hãy nhấn giữ, đồng thời nói trong lúc bạn giữ phím, chỉ thả phím ra khi bạn nói xong.",
-    'en': "Sorry, you released the record key too quick. Please press and hold while speaking, and release only when finished.",
-    'zh': "抱歉，您松开录音键太快了。请按住并说话，说完后再松开。",
-    'es': "Lo siento, soltó la tecla demasiado rápido. Mantenga presionado mientras habla y suéltelo al terminar.",
-    'fr': "Désolé, vous avez relâché la touche trop vite. Maintenez-la enfoncée en parlant."}
-NOT_HEARD = {
-    'vi': "Xin lỗi, tôi không nghe rõ. Vui lòng chọn đúng phím ngôn ngữ và nói lại rõ hơn nhé.",
-    'en': "Sorry, I didn't catch that. Please press the correct language key and speak more clearly.",
-    'zh': "抱歉，我没听清。请按下正确的语言键，并再说清楚一点。",
-    'es': "Lo siento, no entendí. Por favor, presione la tecla del idioma correcto y hable más claro.",
-    'fr': "Désolé, je n'ai pas bien entendu. Veuillez choisir la bonne touche de langue et parler plus clairement.",
-    'ja': "申し訳ありません、聞き取れませんでした。もう一度はっきりお話しください。",
-    'ko': "죄송합니다, 잘 듣지 못했습니다. 다시 한 번 또렷하게 말씀해 주세요.",
-    'ru': "Извините, я не расслышал. Пожалуйста, повторите чётче.",
-    'th': "ขออภัยค่ะ ฉันไม่ได้ยินชัดเจน กรุณาพูดอีกครั้งให้ชัดขึ้น",
-    'tl': "Pasensya na, hindi ko narinig nang malinaw. Pakiulit po nang mas malinaw.",
-    'ms': "Maaf, saya tidak dengar dengan jelas. Sila ulang dengan lebih jelas.",
-    'hi': "क्षमा करें, मैं ठीक से सुन नहीं पाया। कृपया दोबारा स्पष्ट रूप से बोलें।",
-    'it': "Mi dispiace, non ho sentito bene. Per favore, parli più chiaramente."}
+# Nhấn-nhả quá nhanh HOẶC nhấn mà không nói gì -> cùng một thông báo
+WARN_HOLD = {
+    'vi': "Quý khách nhấn và nhả phím quá nhanh, hoặc nhấn phím mà không nói gì. Xin hãy nhấn và giữ phím để nói, và chỉ nhả phím khi nói xong.",
+    'en': "You pressed and released the key too quickly, or pressed it without speaking. Please press and hold the key to speak, and release it only when you have finished.",
+    'zh': "您按键后松开得太快，或者按键后没有说话。请按住按键说话，说完后再松开。",
+    'es': "Ha pulsado y soltado la tecla demasiado rápido, o la ha pulsado sin hablar. Por favor, mantenga pulsada la tecla mientras habla y suéltela solo al terminar.",
+    'fr': "Vous avez appuyé et relâché la touche trop vite, ou appuyé sans parler. Veuillez maintenir la touche enfoncée pour parler, et ne la relâcher qu'une fois terminé.",
+    'ja': "キーを押してすぐに離したか、押したまま話されませんでした。キーを押し続けて話し、話し終えてから離してください。",
+    'ko': "키를 너무 빨리 눌렀다 놓으셨거나, 누르고 말씀하지 않으셨습니다. 키를 누른 채 말씀하시고, 말씀이 끝난 후에만 놓아 주세요.",
+    'ru': "Вы слишком быстро нажали и отпустили клавишу или нажали её, ничего не сказав. Пожалуйста, нажмите и удерживайте клавишу, пока говорите, и отпустите её только после окончания.",
+    'th': "คุณกดแล้วปล่อยปุ่มเร็วเกินไป หรือกดปุ่มแต่ไม่ได้พูดอะไร กรุณากดปุ่มค้างไว้ขณะพูด และปล่อยเมื่อพูดจบเท่านั้น",
+    'tl': "Masyadong mabilis ang pagpindot at pagbitaw ninyo sa key, o pinindot ninyo ito nang hindi nagsasalita. Pakipindot at hawakan ang key habang nagsasalita, at bitawan lamang kapag tapos na.",
+    'ms': "Anda menekan dan melepaskan kekunci terlalu cepat, atau menekan tanpa bercakap. Sila tekan dan tahan kekunci semasa bercakap, dan lepaskan hanya apabila selesai.",
+    'hi': "आपने बटन बहुत जल्दी दबाकर छोड़ दिया, या बटन दबाकर कुछ बोला नहीं। कृपया बोलते समय बटन दबाए रखें, और बोलना खत्म होने पर ही छोड़ें।",
+    'it': "Ha premuto e rilasciato il tasto troppo in fretta, oppure lo ha premuto senza parlare. Tenga premuto il tasto mentre parla e lo rilasci solo al termine."}
 ERROR_SPOKEN = {
     'vi': "Xin lỗi, hệ thống đang gặp sự cố kết nối. Quý khách vui lòng liên hệ nhân viên qua các cách liên lạc đặt tại quầy.",
     'en': "Sorry, the system has a connection problem. Please contact our staff using the contact details at the counter.",
@@ -461,7 +456,7 @@ def _tts_selftest():
 
 def prewarm_phrases():
     """Tạo sẵn các câu cố định ở nền khi khởi động."""
-    for table in (ACK_PHRASES, WARN_QUICK, NOT_HEARD, ERROR_SPOKEN):
+    for table in (ACK_PHRASES, WARN_HOLD, ERROR_SPOKEN):
         for lang, text in table.items():
             try:
                 synth_cached(text, lang)
@@ -559,7 +554,15 @@ def transcribe_cloud(audio, lang):
         temperature=0.0, response_format="verbose_json", **kw)
     print(f"[Groq] nhận diện mất {time.time() - t0:.1f}s cho {audio.size / FS:.1f}s âm thanh")
     detected = lang or _LANG_NAME.get(str(getattr(r, "language", "")).lower(), 'en')
-    return _drop_prompt_echo((r.text or "").strip()), detected
+    text = _drop_prompt_echo((r.text or "").strip())
+    try:                                                   # Whisper tự báo "không có tiếng nói" ở mọi đoạn -> bỏ
+        segs = getattr(r, "segments", None) or []
+        g = lambda x, k: (x.get(k) if isinstance(x, dict) else getattr(x, k, None))
+        if segs and all((g(x, "no_speech_prob") or 0) > 0.6 and (g(x, "avg_logprob") or 0) < -1.0 for x in segs):
+            text = ""
+    except Exception:
+        pass
+    return text, detected
 
 
 def transcribe(audio, lang):
@@ -693,6 +696,23 @@ def stream_reply(gen, user_content, model, label, lang, detect_tag=False, fallba
     return text
 
 
+def warn_hold(gen, lang):
+    """Phát cảnh báo nhấn-nhả quá nhanh / nhấn mà không nói. Biết ngôn ngữ phím thì nói đúng ngôn ngữ đó;
+    chế độ tự động (chưa biết ngôn ngữ) thì tiếng Anh trước rồi tiếng Việt."""
+    if lang in WARN_HOLD:
+        speak(gen, WARN_HOLD[lang], lang, cached=True)
+    else:
+        speak(gen, WARN_HOLD['en'], 'en', cached=True)
+        speak(gen, WARN_HOLD['vi'], 'vi', cached=True)
+
+
+SILENT_PEAK = 0.004         # biên độ đỉnh dưới mức này (khoảng -48 dBFS) = gần như không có tiếng
+
+
+def is_silent(audio):
+    return audio.size == 0 or float(np.max(np.abs(audio))) < SILENT_PEAK
+
+
 def report_error(gen, lang, where, e):
     safe_print(f"[{where}]: {e}")
     speak(gen, ERROR_SPOKEN.get(lang, ERROR_SPOKEN['en']), lang if lang in ERROR_SPOKEN else 'en', cached=True)
@@ -775,13 +795,18 @@ def finish_recording(rid):
 
     if duration < MIN_HOLD or not r["frames"]:
         safe_print(msg('too_quick', shown))
-        speak(gen, WARN_QUICK.get(shown, WARN_QUICK['vi']), shown if shown in WARN_QUICK else 'vi', cached=True)
+        warn_hold(gen, lang)
+        return
+
+    audio = np.concatenate(r["frames"], axis=0).reshape(-1).astype(np.float32)
+    if is_silent(audio):                                   # nhấn giữ đủ lâu nhưng không có tiếng nói
+        safe_print(msg('no_speech', shown))
+        warn_hold(gen, lang)
         return
 
     safe_print(msg('processing', shown))
     if lang and PLAY_ACK:
         speak(gen, ACK_PHRASES.get(lang, ACK_PHRASES['en']), lang if lang in ACK_PHRASES else 'en', cached=True)
-    audio = np.concatenate(r["frames"], axis=0).reshape(-1).astype(np.float32)
     threading.Thread(target=process_audio_pipeline, args=(gen, audio, lang, r["name"]), daemon=True).start()
 
 
@@ -795,15 +820,15 @@ def process_audio_pipeline(gen, audio, lang, lang_name):
         speech, detected = transcribe(audio, lang)
         if gen != current_gen():
             return
-        if not lang and PLAY_ACK:
-            speak(gen, ACK_PHRASES.get(detected, ACK_PHRASES['en']), detected if detected in ACK_PHRASES else 'en', cached=True)
         safe_print(f"[Khách hàng nói ({detected})]: {speech}")
 
-        if not speech:
+        if not speech:                                     # nhấn nhưng không nói gì (hoặc chỉ có tiếng ồn)
             safe_print(msg('no_speech', shown))
-            tl = lang if lang in NOT_HEARD else (detected if detected in NOT_HEARD else 'vi')
-            speak(gen, NOT_HEARD[tl], tl, cached=True)
+            warn_hold(gen, lang)
             return
+
+        if not lang and PLAY_ACK:
+            speak(gen, ACK_PHRASES.get(detected, ACK_PHRASES['en']), detected if detected in ACK_PHRASES else 'en', cached=True)
 
         if lang:
             prompt = f"Khách hàng vừa nói bằng {lang_name}: '{speech}'. Hãy trả lời hoàn toàn bằng {lang_name}."
