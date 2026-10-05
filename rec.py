@@ -85,13 +85,20 @@ LANG_MAP = {
     'f6': ('fr', 'Tiếng Pháp'),
     'f7': (None, 'Tự động nhận diện'),
 }
-TTS_LANGS = ['vi', 'en', 'zh', 'ko', 'ja', 'fr', 'es']
+TTS_LANGS = ['vi', 'en', 'zh', 'ko', 'ja', 'fr', 'es', 'ru', 'th', 'tl', 'ms', 'hi', 'it']
 EDGE_VOICES = {
     'vi': 'vi-VN-HoaiMyNeural', 'en': 'en-US-AriaNeural', 'zh': 'zh-CN-XiaoxiaoNeural',
     'es': 'es-ES-ElviraNeural', 'fr': 'fr-FR-DeniseNeural',
     'ja': 'ja-JP-NanamiNeural', 'ko': 'ko-KR-SunHiNeural',
+    'ru': 'ru-RU-SvetlanaNeural', 'th': 'th-TH-PremwadeeNeural', 'tl': 'fil-PH-BlessicaNeural',
+    'ms': 'ms-MY-YasminNeural', 'hi': 'hi-IN-SwaraNeural', 'it': 'it-IT-ElsaNeural',
 }
-GTTS_CODES = {'zh': 'zh-CN'}
+GTTS_CODES = {'zh': 'zh-CN', 'ms': 'id'}      # gTTS không có tiếng Malay -> dùng tiếng Indonesia (gần giống) khi không có edge-tts
+EDGE_PREFERRED = {'ms'}                        # ngôn ngữ gTTS không có -> ưu tiên edge-tts nếu đã cài
+# Tên ngôn ngữ trả về từ Whisper (Groq) -> mã
+LANG_NAMES = {'vi': 'Tiếng Việt', 'en': 'English', 'zh': 'Chinese', 'es': 'Spanish', 'fr': 'French', 'ja': 'Japanese',
+              'ko': 'Korean', 'ru': 'Russian', 'th': 'Thai', 'tl': 'Filipino (Tagalog)', 'ms': 'Malay', 'hi': 'Hindi',
+              'it': 'Italian'}
 WHISPER_HINT_VI = "Villa Hội An: dọn phòng, nhận phòng, trả phòng, xe máy, ăn sáng, wifi, hồ bơi, Agoda, Zalo, WhatsApp."
 
 
@@ -122,8 +129,9 @@ STT_CLOUD = True                          # False = chỉ dùng Whisper trên m�
 GROQ_MODEL = "whisper-large-v3-turbo"
 _gk = _load_groq_key()
 groq_client = Groq(api_key=_gk, timeout=8.0, max_retries=1) if (Groq and _gk) else None
-_LANG_NAME = {'vietnamese': 'vi', 'english': 'en', 'chinese': 'zh', 'spanish': 'es',
-              'french': 'fr', 'japanese': 'ja', 'korean': 'ko'}
+_LANG_NAME = {'vietnamese': 'vi', 'english': 'en', 'chinese': 'zh', 'spanish': 'es', 'french': 'fr',
+              'japanese': 'ja', 'korean': 'ko', 'russian': 'ru', 'thai': 'th', 'tagalog': 'tl', 'filipino': 'tl',
+              'malay': 'ms', 'hindi': 'hi', 'italian': 'it'}
 SYSTEM_BLOCKS = [{"type": "text", "text": SYSTEM_CONTEXT, "cache_control": {"type": "ephemeral"}}]
 pygame.mixer.init()
 
@@ -183,7 +191,10 @@ ACK_PHRASES = {
     'vi': "Được rồi, tôi đã nhận được câu hỏi.", 'en': "Got it, I have received your question.",
     'zh': "好的，我已经收到您的提问了。", 'es': "Entendido, he recibido su pregunta.",
     'fr': "C'est compris, j'ai bien reçu votre question.",
-    'ja': "わかりました、質問を受け付けました。", 'ko': "알겠습니다, 질문을 접수했습니다."}
+    'ja': "わかりました、質問を受け付けました。", 'ko': "알겠습니다, 질문을 접수했습니다.",
+    'ru': "Хорошо, я получил ваш вопрос.", 'th': "รับทราบค่ะ ฉันได้รับคำถามของคุณแล้ว",
+    'tl': "Sige, natanggap ko na ang inyong tanong.", 'ms': "Baik, saya sudah menerima soalan anda.",
+    'hi': "ठीक है, मुझे आपका प्रश्न मिल गया है।", 'it': "Capito, ho ricevuto la sua domanda."}
 WARN_QUICK = {
     'vi': "Xin lỗi, bạn vừa nhấn và nhả phím thu âm quá nhanh, hãy nhấn giữ, đồng thời nói trong lúc bạn giữ phím, chỉ thả phím ra khi bạn nói xong.",
     'en': "Sorry, you released the record key too quick. Please press and hold while speaking, and release only when finished.",
@@ -195,13 +206,29 @@ NOT_HEARD = {
     'en': "Sorry, I didn't catch that. Please press the correct language key and speak more clearly.",
     'zh': "抱歉，我没听清。请按下正确的语言键，并再说清楚一点。",
     'es': "Lo siento, no entendí. Por favor, presione la tecla del idioma correcto y hable más claro.",
-    'fr': "Désolé, je n'ai pas bien entendu. Veuillez choisir la bonne touche de langue et parler plus clairement."}
+    'fr': "Désolé, je n'ai pas bien entendu. Veuillez choisir la bonne touche de langue et parler plus clairement.",
+    'ja': "申し訳ありません、聞き取れませんでした。もう一度はっきりお話しください。",
+    'ko': "죄송합니다, 잘 듣지 못했습니다. 다시 한 번 또렷하게 말씀해 주세요.",
+    'ru': "Извините, я не расслышал. Пожалуйста, повторите чётче.",
+    'th': "ขออภัยค่ะ ฉันไม่ได้ยินชัดเจน กรุณาพูดอีกครั้งให้ชัดขึ้น",
+    'tl': "Pasensya na, hindi ko narinig nang malinaw. Pakiulit po nang mas malinaw.",
+    'ms': "Maaf, saya tidak dengar dengan jelas. Sila ulang dengan lebih jelas.",
+    'hi': "क्षमा करें, मैं ठीक से सुन नहीं पाया। कृपया दोबारा स्पष्ट रूप से बोलें।",
+    'it': "Mi dispiace, non ho sentito bene. Per favore, parli più chiaramente."}
 ERROR_SPOKEN = {
     'vi': "Xin lỗi, hệ thống đang gặp sự cố kết nối. Quý khách vui lòng liên hệ nhân viên qua các cách liên lạc đặt tại quầy.",
     'en': "Sorry, the system has a connection problem. Please contact our staff using the contact details at the counter.",
     'zh': "抱歉，系统连接出现问题。请通过柜台上的联系方式联系工作人员。",
     'es': "Lo siento, hay un problema de conexión. Por favor contacte al personal con los datos del mostrador.",
-    'fr': "Désolé, problème de connexion. Veuillez contacter le personnel avec les coordonnées du comptoir."}
+    'fr': "Désolé, problème de connexion. Veuillez contacter le personnel avec les coordonnées du comptoir.",
+    'ja': "申し訳ありません、接続に問題があります。カウンターの連絡先からスタッフにご連絡ください。",
+    'ko': "죄송합니다, 연결에 문제가 있습니다. 카운터에 있는 연락처로 직원에게 문의해 주세요.",
+    'ru': "Извините, проблема с подключением. Пожалуйста, свяжитесь с персоналом по контактам на стойке.",
+    'th': "ขออภัยค่ะ ระบบมีปัญหาการเชื่อมต่อ กรุณาติดต่อพนักงานตามข้อมูลที่เคาน์เตอร์",
+    'tl': "Pasensya na, may problema sa koneksyon. Makipag-ugnayan po sa staff gamit ang contact details sa counter.",
+    'ms': "Maaf, terdapat masalah sambungan. Sila hubungi kakitangan melalui maklumat di kaunter.",
+    'hi': "क्षमा करें, कनेक्शन में समस्या है। कृपया काउंटर पर दिए संपर्क विवरण से स्टाफ से संपर्क करें।",
+    'it': "Mi dispiace, c'è un problema di connessione. Contatti il personale con i recapiti al banco."}
 
 
 def msg(key, lang, **kw):
@@ -334,7 +361,7 @@ def synth(text, lang):
     text = prep_for_speech(clean_for_speech(text), lang)
     if not text:
         return b""
-    order = ["edge", "gtts"] if TTS_ENGINE == "edge" else ["gtts", "edge"]
+    order = ["edge", "gtts"] if (TTS_ENGINE == "edge" or lang in EDGE_PREFERRED) else ["gtts", "edge"]
     for eng in order:
         if eng == "edge" and edge_tts is not None:
             try:
@@ -529,9 +556,9 @@ def transcribe_local(audio, lang, warmup=False):
 # =====================================================================
 _hist_lock = threading.Lock()
 history = []          # [(user, assistant)]
-_SENT_RE = re.compile(r".*?(?:[。！？]+|[.!?]+(?=\s)|\n+)", re.S)
+_SENT_RE = re.compile(r".*?(?:[。！？।]+|[.!?]+(?=\s)|\n+)", re.S)
 _TAG_RE = re.compile(r"\s*\[([A-Za-z\-]{2,5})\]\s*")
-_VI_CHARS = set("ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ")
+_VI_CHARS = set("àáãèéìíòóùúýăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ")
 
 
 def split_sentences(buf):
@@ -543,6 +570,16 @@ def split_sentences(buf):
 
 
 def guess_lang(text):
+    if any('぀' <= c <= 'ヿ' for c in text):          # kana -> tiếng Nhật (kiểm tra trước chữ Hán)
+        return 'ja'
+    if any('가' <= c <= '힣' for c in text):
+        return 'ko'
+    if any('Ѐ' <= c <= 'ӿ' for c in text):
+        return 'ru'
+    if any('฀' <= c <= '๿' for c in text):
+        return 'th'
+    if any('ऀ' <= c <= 'ॿ' for c in text):
+        return 'hi'
     if any('一' <= c <= '鿿' for c in text):
         return 'zh'
     if any(c in _VI_CHARS for c in text.lower()):
@@ -731,7 +768,8 @@ def process_audio_pipeline(gen, audio, lang, lang_name):
         if lang:
             prompt = f"Khách hàng vừa nói bằng {lang_name}: '{speech}'. Hãy trả lời hoàn toàn bằng {lang_name}."
         else:
-            prompt = speech
+            reply_lang = LANG_NAMES.get(detected) if detected in TTS_LANGS else "English"
+            prompt = f"Khách hàng vừa nói: '{speech}'. Hãy trả lời hoàn toàn bằng {reply_lang}."
         tts_lang = detected if detected in TTS_LANGS else 'en'
         stream_reply(gen, prompt, MODEL_VOICE, "[A.I Staff]", tts_lang)
     except Exception as e:
