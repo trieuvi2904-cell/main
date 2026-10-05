@@ -1,0 +1,5 @@
+api_key.txt
+groq_key.txt
+audio_cache/
+__pycache__/
+*.pyc
