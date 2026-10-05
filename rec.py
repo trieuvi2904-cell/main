@@ -849,7 +849,7 @@ class ResizableMainWindow(QtWidgets.QMainWindow):
         self.welcome_timer.timeout.connect(self.rotate_welcome)
         self.welcome_timer.start()
 
-        log_emitter.poke_timer_signal.connect(self.poke_inactivity_timer)
+        log_emitter.poke_timer_signal.connect(self.on_key_activity)
         log_emitter.append_log_signal.connect(self.append_line)
         log_emitter.inline_log_signal.connect(self.append_inline)
         self.ui.type.installEventFilter(self)
@@ -866,7 +866,6 @@ class ResizableMainWindow(QtWidgets.QMainWindow):
             self._welcome_only = True
             self._scroll_bottom()
             return
-        self._welcome_only = False
         safe = html.escape(text).replace("\n", "<br>")
         self.ui.textBrowser.append(f"<div style='margin-bottom:5px;'>{safe}</div>")
         self._scroll_bottom()
@@ -881,7 +880,6 @@ class ResizableMainWindow(QtWidgets.QMainWindow):
         self.ui.textBrowser.append(welcome_html(_welcome_second))
 
     def append_inline(self, text):
-        self._welcome_only = False
         cur = self.ui.textBrowser.textCursor()
         cur.movePosition(QtGui.QTextCursor.MoveOperation.End)
         cur.insertText(text)
@@ -891,6 +889,11 @@ class ResizableMainWindow(QtWidgets.QMainWindow):
     def _scroll_bottom(self):
         sb = self.ui.textBrowser.verticalScrollBar()
         sb.setValue(sb.maximum())
+
+    def on_key_activity(self):
+        """Khách bấm phím = bắt đầu hội thoại: dừng luân phiên hướng dẫn (các dòng log hệ thống không làm dừng)."""
+        self._welcome_only = False
+        self.poke_inactivity_timer()
 
     def poke_inactivity_timer(self):
         self.inactivity_timer.start()
