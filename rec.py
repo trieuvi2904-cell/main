@@ -255,22 +255,22 @@ def safe_print(text):
 
 
 def _step(n, vi, en):
-    return (f"<tr><td width='46' align='center' bgcolor='#1f7a3d'><span style='color:#ffffff; font-size:20pt; font-weight:bold;'>{n}</span></td>"
-            f"<td bgcolor='#eef7ef'><span style='color:#14532d; font-size:13pt; font-weight:bold;'>{vi}</span><br>"
-            f"<span style='color:#2f2f2f; font-size:10pt; font-weight:bold;'>{en}</span></td></tr>")
+    return (f"<tr><td width='46' align='center' bgcolor='#1f7a3d'><span style='color:#ffffff; font-size:26pt; font-weight:bold;'>{n}</span></td>"
+            f"<td bgcolor='#eef7ef'><span style='color:#14532d; font-size:15pt; font-weight:bold;'>{vi}</span><br>"
+            f"<span style='color:#2f2f2f; font-size:12pt; font-weight:bold;'>{en}</span></td></tr>")
 
 
 WELCOME_HTML = (
     "<div align='center' style='margin-bottom:6px;'>"
-    "<span style='color:#14532d; font-size:14pt; font-weight:bold;'>CÁCH NÓI CHUYỆN VỚI TÔI</span><br>"
-    "<span style='color:#14532d; font-size:10pt; font-weight:bold;'>HOW TO TALK TO ME</span></div>"
-    "<table width='100%' cellspacing='4' cellpadding='4'>"
+    "<span style='color:#14532d; font-size:17pt; font-weight:bold;'>CÁCH NÓI CHUYỆN VỚI TÔI</span><br>"
+    "<span style='color:#14532d; font-size:12pt; font-weight:bold;'>HOW TO TALK TO ME</span></div>"
+    "<table width='100%' cellspacing='6' cellpadding='6'>"
     + _step("1", "NHẤN và GIỮ phím bên trái", "PRESS and HOLD the left key")
     + _step("2", "NÓI bằng ngôn ngữ của bạn", "SPEAK in your own language")
     + _step("3", "NHẢ phím khi nói xong", "RELEASE the key when you finish")
     + "</table>"
-    "<div align='center' style='margin-top:4px;'>"
-    "<span style='color:#b45309; font-size:10pt; font-weight:bold;'>Giữ phím suốt lúc nói - đừng nhả sớm<br>"
+    "<div align='center' style='margin-top:8px;'>"
+    "<span style='color:#b45309; font-size:11pt; font-weight:bold;'>Giữ phím suốt lúc nói - đừng nhả sớm<br>"
     "Keep holding while you speak - do not release early</span></div>"
 )
 
