@@ -254,30 +254,50 @@ def safe_print(text):
     log_emitter.append_log_signal.emit(text)
 
 
-def _step(n, en, vi):
-    return (f"<tr><td width='46' align='center' bgcolor='#1f7a3d'><span style='color:#ffffff; font-size:26pt; font-weight:bold;'>{n}</span></td>"
-            f"<td bgcolor='#eef7ef'><span style='color:#14532d; font-size:15pt; font-weight:bold;'>{en}</span><br>"
-            f"<span style='color:#2f2f2f; font-size:12pt; font-weight:bold;'>{vi}</span></td></tr>")
+# Hướng dẫn: tiếng Anh luôn ở trên; dòng dưới luân phiên Việt <-> Trung mỗi WELCOME_SWAP_MS
+WELCOME_TEXT = {
+    'title': {'en': "HOW TO TALK TO ME", 'vi': "CÁCH NÓI CHUYỆN VỚI TÔI", 'zh': "如何与我对话"},
+    's1': {'en': "PRESS and HOLD the language key below",
+           'vi': "NHẤN và GIỮ phím ngôn ngữ bên dưới",
+           'zh': "按住下方对应的语言键"},
+    's2': {'en': "SPEAK in your own language", 'vi': "NÓI bằng ngôn ngữ của bạn", 'zh': "用您的语言说话"},
+    's3': {'en': "RELEASE the key when you finish", 'vi': "NHẢ phím khi nói xong", 'zh': "说完后松开按键"},
+    'tip': {'en': "Keep holding while you speak - do not release early",
+            'vi': "Giữ phím suốt lúc nói - đừng nhả sớm",
+            'zh': "说话时请一直按住，不要过早松开"},
+}
+WELCOME_KEYS = "VIE&nbsp;·&nbsp;ENG&nbsp;·&nbsp;中&nbsp;·&nbsp;ESP&nbsp;·&nbsp;FRA&nbsp;·&nbsp;AUTO"
+WELCOME_SWAP_MS = 5000
+_welcome_second = 'vi'
 
 
-WELCOME_HTML = (          # luôn để tiếng Anh trước, tiếng Việt sau
-    "<div align='center' style='margin-bottom:6px;'>"
-    "<span style='color:#14532d; font-size:17pt; font-weight:bold;'>HOW TO TALK TO ME</span><br>"
-    "<span style='color:#14532d; font-size:12pt; font-weight:bold;'>CÁCH NÓI CHUYỆN VỚI TÔI</span></div>"
-    "<table width='100%' cellspacing='6' cellpadding='6'>"
-    + _step("1", "PRESS and HOLD the left key", "NHẤN và GIỮ phím bên trái")
-    + _step("2", "SPEAK in your own language", "NÓI bằng ngôn ngữ của bạn")
-    + _step("3", "RELEASE the key when you finish", "NHẢ phím khi nói xong")
-    + "</table>"
-    "<div align='center' style='margin-top:8px;'>"
-    "<span style='color:#b45309; font-size:11pt; font-weight:bold;'>Keep holding while you speak - do not release early<br>"
-    "Giữ phím suốt lúc nói - đừng nhả sớm</span></div>"
-)
+def _step(n, key, second):
+    t = WELCOME_TEXT[key]
+    return (f"<tr><td width='46' align='center' bgcolor='#1f7a3d'><span style='color:#ffffff; font-size:22pt; font-weight:bold;'>{n}</span></td>"
+            f"<td bgcolor='#eef7ef'><span style='color:#14532d; font-size:13pt; font-weight:bold;'>{t['en']}</span><br>"
+            f"<span style='color:#2f2f2f; font-size:11pt; font-weight:bold;'>{t[second]}</span></td></tr>")
+
+
+def welcome_html(second='vi'):
+    t = WELCOME_TEXT
+    return (
+        "<div align='center' style='margin-bottom:6px;'>"
+        f"<span style='color:#14532d; font-size:15pt; font-weight:bold;'>{t['title']['en']}</span><br>"
+        f"<span style='color:#14532d; font-size:11pt; font-weight:bold;'>{t['title'][second]}</span></div>"
+        "<table width='100%' cellspacing='5' cellpadding='5'>"
+        + _step("1", 's1', second)
+        + "<tr><td></td><td align='center' bgcolor='#14532d'><span style='color:#6bffb0; font-size:11pt; font-weight:bold;'>"
+        + WELCOME_KEYS + "</span></td></tr>"
+        + _step("2", 's2', second) + _step("3", 's3', second)
+        + "</table>"
+        "<div align='center' style='margin-top:6px;'>"
+        f"<span style='color:#b45309; font-size:10pt; font-weight:bold;'>{t['tip']['en']}<br>{t['tip'][second]}</span></div>"
+    )
 
 
 def print_welcome_instructions():
-    print("[Guide] Press and hold the key on the left to speak / Nhấn và giữ phím bên góc trái để nói")
-    log_emitter.append_log_signal.emit("\x00html" + WELCOME_HTML)
+    print("[Guide] Press and hold the language key below (VIE/ENG/中/ESP/FRA/AUTO) to speak / Nhấn và giữ phím ngôn ngữ bên dưới để nói")
+    log_emitter.append_log_signal.emit("\x00html" + welcome_html(_welcome_second))
 
 
 # =====================================================================
@@ -823,6 +843,12 @@ class ResizableMainWindow(QtWidgets.QMainWindow):
         self.inactivity_timer.setSingleShot(True)
         self.inactivity_timer.timeout.connect(self.reset_to_welcome_screen)
 
+        self._welcome_only = False                      # True khi ô trắng chỉ có màn hình hướng dẫn
+        self.welcome_timer = QtCore.QTimer(self)
+        self.welcome_timer.setInterval(WELCOME_SWAP_MS)
+        self.welcome_timer.timeout.connect(self.rotate_welcome)
+        self.welcome_timer.start()
+
         log_emitter.poke_timer_signal.connect(self.poke_inactivity_timer)
         log_emitter.append_log_signal.connect(self.append_line)
         log_emitter.inline_log_signal.connect(self.append_inline)
@@ -837,13 +863,25 @@ class ResizableMainWindow(QtWidgets.QMainWindow):
             return
         if text.startswith("\x00html"):                 # khối HTML dựng sẵn (màn hình hướng dẫn)
             self.ui.textBrowser.append(text[5:])
+            self._welcome_only = True
             self._scroll_bottom()
             return
+        self._welcome_only = False
         safe = html.escape(text).replace("\n", "<br>")
         self.ui.textBrowser.append(f"<div style='margin-bottom:5px;'>{safe}</div>")
         self._scroll_bottom()
 
+    def rotate_welcome(self):
+        """Mỗi 5 giây đổi dòng phụ của hướng dẫn: Việt <-> Trung (tiếng Anh luôn ở trên)."""
+        global _welcome_second
+        if not self._welcome_only:
+            return
+        _welcome_second = 'zh' if _welcome_second == 'vi' else 'vi'
+        self.ui.textBrowser.clear()
+        self.ui.textBrowser.append(welcome_html(_welcome_second))
+
     def append_inline(self, text):
+        self._welcome_only = False
         cur = self.ui.textBrowser.textCursor()
         cur.movePosition(QtGui.QTextCursor.MoveOperation.End)
         cur.insertText(text)
