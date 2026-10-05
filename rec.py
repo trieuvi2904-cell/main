@@ -257,9 +257,9 @@ def safe_print(text):
 # Hướng dẫn: tiếng Anh luôn ở trên; dòng dưới luân phiên Việt <-> Trung mỗi WELCOME_SWAP_MS
 WELCOME_TEXT = {
     'title': {'en': "HOW TO TALK TO ME", 'vi': "CÁCH NÓI CHUYỆN VỚI TÔI", 'zh': "如何与我对话"},
-    's1': {'en': "PRESS and HOLD the language key below",
-           'vi': "NHẤN và GIỮ phím ngôn ngữ bên dưới",
-           'zh': "按住下方对应的语言键"},
+    's1': {'en': "PRESS and HOLD the corresponding language key",
+           'vi': "NHẤN và GIỮ phím ngôn ngữ tương ứng",
+           'zh': "按住对应的语言键"},
     's2': {'en': "SPEAK in your own language", 'vi': "NÓI bằng ngôn ngữ của bạn", 'zh': "用您的语言说话"},
     's3': {'en': "RELEASE the key when you finish", 'vi': "NHẢ phím khi nói xong", 'zh': "说完后松开按键"},
     'tip': {'en': "Keep holding while you speak - do not release early",
@@ -296,7 +296,7 @@ def welcome_html(second='vi'):
 
 
 def print_welcome_instructions():
-    print("[Guide] Press and hold the language key below (VIE/ENG/中/ESP/FRA/AUTO) to speak / Nhấn và giữ phím ngôn ngữ bên dưới để nói")
+    print("[Guide] Press and hold the corresponding language key (VIE/ENG/中/ESP/FRA/AUTO) to speak / Nhấn và giữ phím ngôn ngữ tương ứng để nói")
     log_emitter.append_log_signal.emit("\x00html" + welcome_html(_welcome_second))
 
 
