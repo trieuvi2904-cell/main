@@ -1,6 +1,14 @@
 @echo off
+chcp 65001 >nul
 cd /d "%~dp0"
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+rem Uu tien Python 3.12/3.11 (Python 3.14 chua co nhieu thu vien); neu khong co thi dung python mac dinh
+set PY=python
+py -3.12 --version >nul 2>&1 && set PY=py -3.12
+if "%PY%"=="python" py -3.11 --version >nul 2>&1 && set PY=py -3.11
+echo Dang dung: %PY%
+%PY% --version
+%PY% -m pip install --upgrade pip
+%PY% -m pip install numpy sounddevice keyboard anthropic pygame PyQt6 faster-whisper edge-tts gTTS groq pillow qrcode
 echo.
+echo === Xong. Neu co chu ERROR o tren, hay chup lai gui cho toi ===
 pause
