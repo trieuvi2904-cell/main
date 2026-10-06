@@ -10,6 +10,8 @@ echo Dang dung: %PY%
 %PY% --version
 %PY% -m pip install --upgrade pip
 %PY% -m pip install numpy sounddevice keyboard anthropic pygame PyQt6 faster-whisper edge-tts gTTS groq pillow qrcode
+rem gTTS: pip tu lui ve ban cu 2.2.4 do xung dot phien ban "click"; ep len ban moi (khong dung toi click khi chay)
+%PY% -m pip install --no-deps --upgrade gTTS==2.5.4
 echo.
 echo === Xong. Neu co chu ERROR o tren, hay chup lai gui cho toi ===
 pause
