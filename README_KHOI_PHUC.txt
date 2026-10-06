@@ -1,22 +1,24 @@
-KHÔI PHỤC ỨNG DỤNG LỄ TÂN A.I
+LỄ TÂN A.I - GÓI KHÔI PHỤC ĐẦY ĐỦ
 
-CÓ TRONG GÓI NÀY:
-  rec.py            chương trình chính (Groq STT, đa ngôn ngữ, hướng dẫn song ngữ...)
-  ui_letan.py       giao diện (đã ẩn ô gõ phím)
-  requirements.txt  danh sách thư viện
-
-KHÔNG CÓ (tôi chưa từng nhận các file này, bạn cần tìm lại hoặc tạo lại):
-  gv.py                      widget tuỳ chỉnh mà ui_letan.py import
-  prompt_letan.py            SYSTEM_CONTEXT + time_context() (nội dung tư vấn của villa)
-  doc_chu.py                 prep_for_speech() (chuẩn hoá cách đọc)
-  anh nen app.png            ảnh nền 1376x768
-  qr_host.png, qr_bank.png   hai mã QR
-  fonts/ (Be Vietnam Pro .ttf)   font giao diện
-  api_key.txt                khoá Anthropic (tạo lại ở console.anthropic.com)
-  groq_key.txt               khoá Groq (tạo lại ở console.groq.com)
-  audio_cache/               tự tạo lại khi chạy (không cần khôi phục)
-
-CÀI ĐẶT:
-  1) Cài Python 3.10+ (tick "Add to PATH") và ffmpeg (C:\ffmpeg\bin\ffmpeg.exe)
+CÀI ĐẶT
+  1) Python 3.10+ (tick "Add to PATH") và ffmpeg (đặt ở C:\ffmpeg\bin\ffmpeg.exe) - ffmpeg dùng để tăng tốc giọng gTTS
   2) pip install -r requirements.txt
-  3) Đặt đủ các file ở trên cùng một thư mục, rồi: python rec.py
+  3) Tạo 2 file khoá cạnh rec.py (mỗi file chỉ chứa khoá):
+       api_key.txt   (Anthropic - console.anthropic.com)
+       groq_key.txt  (Groq - console.groq.com)
+  4) python rec.py   (chạy bằng quyền Administrator nếu thư viện 'keyboard' không bắt được phím)
+
+CÁC FILE
+  rec.py            chương trình chính
+  ui_letan.py       giao diện 1376x768
+  gv.py             widget chữ HTML (viết lại)
+  prompt_letan.py   nội dung tư vấn - ĐIỀN các mục [CẬP NHẬT] (giờ nhận/trả phòng, xe máy, hồ bơi...)
+  doc_chu.py        chuẩn hoá cách đọc (website, số điện thoại, wifi...) (viết lại)
+  gen_assets.py     tạo lại ảnh nền + QR; "anh nen app.png", "qr_host.png", "qr_bank.png" đã tạo sẵn
+  fonts/            (chưa có) tải Be Vietnam Pro (Google Fonts) rồi đặt các file .ttf vào đây; không có thì dùng font mặc định
+
+LƯU Ý
+  - qr_host.png trỏ tới https://hoianfairyvilla.com
+  - qr_bank.png là mã VietQR tạo từ TPBank 1000 1689 000: HÃY QUÉT THỬ BẰNG APP NGÂN HÀNG trước khi in/dùng.
+    Tốt nhất thay bằng ảnh QR tải từ app ngân hàng của bạn (đặt tên qr_bank.png).
+  - Ảnh nền là bản vẽ lại, nếu có ảnh nền cũ thì ghi đè "anh nen app.png".
