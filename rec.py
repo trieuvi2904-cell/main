@@ -27,7 +27,7 @@ from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import pyqtSignal, QObject
 
 from ui_letan import Ui_MainWindow          # giao diện (dùng widget gv từ gv.py)
-from prompt_letan import SYSTEM_CONTEXT, time_context     # nội dung tư vấn + giờ hiện tại
+from prompt_letan import SYSTEM_CONTEXT, time_context, turn_hint     # nội dung tư vấn + giờ hiện tại
 import thong_bao_mail as mail             # báo email cho chủ nhà khi có khách hỏi
 from doc_chu import prep_for_speech         # chuẩn hoá cách đọc (website, số, khu C...)
 
@@ -871,10 +871,10 @@ def process_audio_pipeline(gen, audio, lang, lang_name):
             speak(gen, ACK_PHRASES.get(detected, ACK_PHRASES['en']), detected if detected in ACK_PHRASES else 'en', cached=True)
 
         if lang:
-            prompt = f"Khách hàng vừa nói bằng {lang_name}: '{speech}'. Hãy trả lời hoàn toàn bằng {lang_name}."
+            prompt = f"Khách hàng vừa nói bằng {lang_name}: '{speech}'. Hãy trả lời hoàn toàn bằng {lang_name}. {turn_hint()}"
         else:
             reply_lang = LANG_NAMES.get(detected) if detected in TTS_LANGS else "English"
-            prompt = f"Khách hàng vừa nói: '{speech}'. Hãy trả lời hoàn toàn bằng {reply_lang}."
+            prompt = f"Khách hàng vừa nói: '{speech}'. Hãy trả lời hoàn toàn bằng {reply_lang}. {turn_hint()}"
         tts_lang = detected if detected in TTS_LANGS else 'en'
         reply = stream_reply(gen, prompt, MODEL_VOICE, "[A.I Staff]", tts_lang)
         if reply:
@@ -889,7 +889,7 @@ def process_text_pipeline(user_text):
         safe_print(f"[Khách gõ phím]: {user_text}")
         prompt = (f"Khách hàng vừa gõ tin nhắn: '{user_text}'. Hãy xác định ngôn ngữ của khách hàng và trả lời hoàn toàn bằng "
                   f"chính ngôn ngữ đó. Hãy bắt đầu câu trả lời bằng mã ngôn ngữ trong ngoặc vuông "
-                  f"(ví dụ [vi], [en], [zh], [es], [fr]) rồi mới viết nội dung.")
+                  f"(ví dụ [vi], [en], [zh], [es], [fr]) rồi mới viết nội dung. {turn_hint()}")
         stream_reply(gen, prompt, MODEL_TEXT, "[Claude Lễ Tân]", guess_lang(user_text),
                      detect_tag=True, fallback_text=user_text)
     except Exception as e:
