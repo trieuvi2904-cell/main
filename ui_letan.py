@@ -205,7 +205,35 @@ class ArrowDown(QtWidgets.QWidget):
 
 
 class FitView(QtWidgets.QGraphicsView):
-    """Khung nhìn tự co giao diện 1376x768 vừa khít theo kích thước của chính nó."""
+    """Khung nhìn tự co giao diện vừa khít cửa sổ (giữ tỉ lệ, không cắt); phần thừa hai bên được phủ bằng
+    chính ảnh nền phóng to và làm mờ nên luôn tràn kín màn hình, không có viền đen."""
+    _backdrop_src = None
+    _backdrop = None
+
+    def set_backdrop(self, pm):
+        if pm is not None and not pm.isNull():
+            self._backdrop_src = pm.scaled(64, max(1, round(64 * pm.height() / pm.width())),
+                                           Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            self._backdrop = None
+
+    def drawBackground(self, painter, rect):
+        if self._backdrop_src is None:
+            return super().drawBackground(painter, rect)
+        vp = self.viewport().size()
+        if self._backdrop is None or self._backdrop.size() != vp:
+            big = self._backdrop_src.scaled(vp, Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                                            Qt.TransformationMode.SmoothTransformation)
+            x, y = (big.width() - vp.width()) // 2, (big.height() - vp.height()) // 2
+            pm = big.copy(x, y, vp.width(), vp.height())
+            p = QtGui.QPainter(pm)
+            p.fillRect(pm.rect(), QtGui.QColor(0, 0, 0, 70))
+            p.end()
+            self._backdrop = pm
+        painter.save()
+        painter.resetTransform()
+        painter.drawPixmap(0, 0, self._backdrop)
+        painter.restore()
+
     def _fit(self):
         if self.scene() is not None:
             self.fitInView(self.scene().sceneRect(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
@@ -220,23 +248,25 @@ class FitView(QtWidgets.QGraphicsView):
 
 
 class Ui_MainWindow(object):
-    W, H = 1376, 768
+    W, H = 1376, 768            # vùng nội dung
+    M = 30                      # lề trang trí quanh nội dung (khung/dây leo nằm trong lề, không đè chữ)
 
     def setupUi(self, MainWindow):
         load_fonts()
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(self.W, self.H)
+        MainWindow.resize(self.W + 2 * self.M, self.H + 2 * self.M)
+        MainWindow.setMinimumSize(640, 360)
 
         self.centralwidget = QtWidgets.QWidget()
         self.centralwidget.setObjectName("centralwidget")
         self.centralwidget.setFixedSize(self.W, self.H)
 
-        # ---- Ảnh nền (đã thu nhỏ ô trắng, mở rộng khung trái) ----
-        self.label = QtWidgets.QLabel(self.centralwidget)
+        # ---- Ảnh nền: đặt trong scene (kích thước nội dung + lề 2*M), nội dung nằm giữa ----
+        self.label = QtWidgets.QLabel(self.centralwidget)          # giữ lại để tương thích, trong suốt
         self.label.setGeometry(0, 0, self.W, self.H)
-        self.label.setPixmap(QtGui.QPixmap(os.path.join(BASE, "anh nen app.png")))
-        self.label.setScaledContents(True)
         self.label.setObjectName("label")
+        self.centralwidget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self._art = QtGui.QPixmap(os.path.join(BASE, "anh nen app.png"))
 
         # ---- Khung phía trên bên phải: thông tin website / điện thoại / wifi ----
         self.info = GlowText(self.centralwidget, QtCore.QRect(752, 20, 606, 90), CONTACT_HTML)
@@ -314,13 +344,20 @@ class Ui_MainWindow(object):
         # Bọc giao diện 1376x768 trong một khung nhìn để tự co giãn theo cửa sổ (giữ đúng tỉ lệ)
         self.view = FitView(MainWindow)
         self.view.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
-        self.view.setStyleSheet("background:#0B120E;")
+        self.view.setStyleSheet("background:#07140E;")
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scene = QtWidgets.QGraphicsScene(self.view)
         self.view.setScene(self.scene)
+        SW, SH = self.W + 2 * self.M, self.H + 2 * self.M
+        if not self._art.isNull():
+            self.art_item = self.scene.addPixmap(self._art.scaled(SW, SH, Qt.AspectRatioMode.IgnoreAspectRatio,
+                                                                  Qt.TransformationMode.SmoothTransformation))
+            self.art_item.setZValue(-10)
+        self.view.set_backdrop(self._art)
         self.proxy = self.scene.addWidget(self.centralwidget)
-        self.scene.setSceneRect(0, 0, self.W, self.H)
+        self.proxy.setPos(self.M, self.M)
+        self.scene.setSceneRect(0, 0, SW, SH)
         self.view.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
         self.view.setRenderHints(QtGui.QPainter.RenderHint.SmoothPixmapTransform | QtGui.QPainter.RenderHint.TextAntialiasing)
         MainWindow.setCentralWidget(self.view)

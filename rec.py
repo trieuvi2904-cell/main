@@ -28,6 +28,7 @@ from PyQt6.QtCore import pyqtSignal, QObject
 
 from ui_letan import Ui_MainWindow          # giao diện (dùng widget gv từ gv.py)
 from prompt_letan import SYSTEM_CONTEXT, time_context     # nội dung tư vấn + giờ hiện tại
+import thong_bao_mail as mail             # báo email cho chủ nhà khi có khách hỏi
 from doc_chu import prep_for_speech         # chuẩn hoá cách đọc (website, số, khu C...)
 
 # Thư viện giọng nói: ưu tiên bản nhanh, tự lùi về bản cũ nếu chưa cài
@@ -715,6 +716,7 @@ def is_silent(audio):
 
 def report_error(gen, lang, where, e):
     safe_print(f"[{where}]: {e}")
+    mail.add("error", lang, reply=f"{where}: {e}")
     speak(gen, ERROR_SPOKEN.get(lang, ERROR_SPOKEN['en']), lang if lang in ERROR_SPOKEN else 'en', cached=True)
 
 
@@ -796,12 +798,14 @@ def finish_recording(rid):
     if duration < MIN_HOLD or not r["frames"]:
         safe_print(msg('too_quick', shown))
         warn_hold(gen, lang)
+        mail.add("empty", shown)
         return
 
     audio = np.concatenate(r["frames"], axis=0).reshape(-1).astype(np.float32)
     if is_silent(audio):                                   # nhấn giữ đủ lâu nhưng không có tiếng nói
         safe_print(msg('no_speech', shown))
         warn_hold(gen, lang)
+        mail.add("empty", shown)
         return
 
     safe_print(msg('processing', shown))
@@ -825,6 +829,7 @@ def process_audio_pipeline(gen, audio, lang, lang_name):
         if not speech:                                     # nhấn nhưng không nói gì (hoặc chỉ có tiếng ồn)
             safe_print(msg('no_speech', shown))
             warn_hold(gen, lang)
+            mail.add("empty", detected)
             return
 
         if not lang and PLAY_ACK:
@@ -836,7 +841,9 @@ def process_audio_pipeline(gen, audio, lang, lang_name):
             reply_lang = LANG_NAMES.get(detected) if detected in TTS_LANGS else "English"
             prompt = f"Khách hàng vừa nói: '{speech}'. Hãy trả lời hoàn toàn bằng {reply_lang}."
         tts_lang = detected if detected in TTS_LANGS else 'en'
-        stream_reply(gen, prompt, MODEL_VOICE, "[A.I Staff]", tts_lang)
+        reply = stream_reply(gen, prompt, MODEL_VOICE, "[A.I Staff]", tts_lang)
+        if reply:
+            mail.add("chat", detected, speech, reply)
     except Exception as e:
         report_error(gen, lang or 'en', "Lỗi hệ thống", e)
 
@@ -951,7 +958,10 @@ class ResizableMainWindow(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = ResizableMainWindow()
-    MainWindow.show()
+    MainWindow.showMaximized()          # bung kín màn hình; F11 = bật/tắt toàn màn hình thật (kiosk), Esc = thoát
+    QtGui.QShortcut(QtGui.QKeySequence("F11"), MainWindow,
+                    activated=lambda: MainWindow.showNormal() if MainWindow.isFullScreen() else MainWindow.showFullScreen())
+    QtGui.QShortcut(QtGui.QKeySequence("Esc"), MainWindow, activated=MainWindow.showMaximized)
 
     threading.Thread(target=_player_loop, daemon=True).start()
     threading.Thread(target=load_models, daemon=True).start()     # nạp mô hình ở nền, cửa sổ hiện ngay
