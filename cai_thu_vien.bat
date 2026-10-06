@@ -5,6 +5,7 @@ rem Uu tien Python 3.12/3.11 (Python 3.14 chua co nhieu thu vien); neu khong co 
 set PY=python
 py -3.12 --version >nul 2>&1 && set PY=py -3.12
 if "%PY%"=="python" py -3.11 --version >nul 2>&1 && set PY=py -3.11
+if "%PY%"=="python" py -3.13 --version >nul 2>&1 && set PY=py -3.13
 echo Dang dung: %PY%
 %PY% --version
 %PY% -m pip install --upgrade pip

@@ -4,6 +4,7 @@ cd /d "%~dp0"
 set PY=python
 py -3.12 --version >nul 2>&1 && set PY=py -3.12
 if "%PY%"=="python" py -3.11 --version >nul 2>&1 && set PY=py -3.11
+if "%PY%"=="python" py -3.13 --version >nul 2>&1 && set PY=py -3.13
 %PY% rec.py
 echo.
 echo === Chuong trinh da dung. Doc loi o tren (neu co) ===
