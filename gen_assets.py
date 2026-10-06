@@ -91,7 +91,7 @@ def background():
     sd = ImageDraw.Draw(sp)
     for _ in range(70):
         x, y = rnd.uniform(40, SW - 40), rnd.uniform(40, SH - 40)
-        if 856 + M - 20 < x < 1348 + M + 20 and 150 + M - 20 < y < 592 + M + 20:
+        if 856 + M - 20 < x < 1348 + M + 20 and 150 + M - 20 < y < 580 + M + 20:
             continue                                   # không đặt trong ô trắng
         if (40 + M < x < 760 + M and 170 + M < y < 580 + M) or (740 + M < x < 1370 + M and 10 + M < y < 120 + M) \
                 or (30 + M < x < 760 + M and 620 + M < y < 750 + M):
@@ -150,7 +150,7 @@ def background():
         d.polygon([(x, y - r), (x + r, y), (x, y + r), (x - r, y)], fill=GOLD + (255,), outline=(120, 90, 30, 255))
 
     # ô trắng hiển thị: bóng + thẻ + viền kép + micro
-    px0, py0, px1, py1 = (856 + M) * S, (150 + M) * S, (1348 + M) * S, (592 + M) * S
+    px0, py0, px1, py1 = (856 + M) * S, (150 + M) * S, (1348 + M) * S, (580 + M) * S
     sh = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     ImageDraw.Draw(sh).rounded_rectangle((px0, py0 + 8 * S, px1, py1 + 8 * S), 30 * S, fill=(0, 0, 0, 150))
     img = Image.alpha_composite(img, sh.filter(ImageFilter.GaussianBlur(14 * S)))
@@ -164,6 +164,23 @@ def background():
     d.arc((mx - 15 * S, my - 6 * S, mx + 15 * S, my + 22 * S), 0, 180, fill=ink, width=3 * S)
     d.line((mx, my + 22 * S, mx, my + 32 * S), fill=ink, width=3 * S)
     d.line((mx - 9 * S, my + 32 * S, mx + 9 * S, my + 32 * S), fill=ink, width=3 * S)
+
+    # khung bao quanh khối website + số điện thoại (phía trên bên phải)
+    bx0, by0, bx1, by1 = (736 + M) * S, (12 + M) * S, (1372 + M) * S, (118 + M) * S
+    bl = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    ImageDraw.Draw(bl).rounded_rectangle((bx0, by0 + 5 * S, bx1, by1 + 5 * S), 22 * S, fill=(0, 0, 0, 120))
+    img = Image.alpha_composite(img, bl.filter(ImageFilter.GaussianBlur(9 * S)))
+    d = ImageDraw.Draw(img, "RGBA")
+    d.rounded_rectangle((bx0, by0, bx1, by1), 22 * S, fill=(6, 30, 20, 150), outline=MINT + (210,), width=2 * S)
+    d.rounded_rectangle((bx0 + 6 * S, by0 + 6 * S, bx1 - 6 * S, by1 - 6 * S), 17 * S, outline=GOLD + (120,), width=1 * S)
+    for x, y in ((bx0, (by0 + by1) / 2), (bx1, (by0 + by1) / 2)):                 # kim cương hai bên khung
+        r = 6 * S
+        d.polygon([(x, y - r), (x + r, y), (x, y + r), (x - r, y)], fill=GOLD + (255,), outline=(120, 90, 30, 255))
+    lv0 = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    ld0 = ImageDraw.Draw(lv0)
+    for (x, y, a) in ((bx0 + 2 * S, by0 + 2 * S, -2.6), (bx0 + 2 * S, by0 + 2 * S, -2.0), (bx1 - 2 * S, by1 - 2 * S, 0.5), (bx1 - 2 * S, by1 - 2 * S, 1.1)):
+        _leaf(ld0, x, y, 22 * S, 9 * S, a, LEAF + (230,), MINT + (150,))
+    img = Image.alpha_composite(img, lv0)
 
     # lá nhỏ ôm hai góc của ô trắng
     lv = Image.new("RGBA", (w, h), (0, 0, 0, 0))

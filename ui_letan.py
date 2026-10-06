@@ -41,13 +41,20 @@ HINT_BLINK_MIN = 0.12    # độ sáng thấp nhất (0..1): càng nhỏ càng n
 FLOAT_PX = 5           # biên độ chữ "nhấp nhô"
 
 
+class _ScaleK(float):
+    """Hệ số co chữ: k * 14 -> số nguyên px (dùng với chuỗi định dạng %d)."""
+    def __mul__(self, n):
+        return max(8, int(round(float(self) * n)))
+    __rmul__ = __mul__
+
+
 def _html(title, line2, sub):
     """Cả khối tiếng Việt và khối tiếng Anh dùng đúng cùng cỡ chữ."""
     return (
         f'<div style="text-align:center;">'
-        f'<div style="font-size:36px; font-weight:800; color:{GREEN};">{title}</div>'
-        f'<div style="font-size:34px; font-weight:800; color:{WHITE}; margin-top:4px;">{line2}</div>'
-        f'<div style="font-size:18px; font-weight:600; color:{GRAY}; margin-top:10px;">{sub}</div>'
+        f'<div style="font-size:41px; font-weight:800; color:{GREEN};">{title}</div>'
+        f'<div style="font-size:39px; font-weight:800; color:{WHITE}; margin-top:4px;">{line2}</div>'
+        f'<div style="font-size:21px; font-weight:600; color:{GRAY}; margin-top:10px;">{sub}</div>'
         f'</div>'
     )
 
@@ -299,8 +306,8 @@ class Ui_MainWindow(object):
             f"padding:4px 8px; font-family:'{FONT_FAMILY}'; font-size:14px; font-weight:600; }}")
 
         # ---- Khung trái: tiếng Anh (trên) và tiếng Việt (dưới), cỡ chữ bằng nhau ----
-        self.en_block = GlowText(self.centralwidget, QtCore.QRect(62, 188, 665, 172), EN_HTML)
-        self.vn_block = GlowText(self.centralwidget, QtCore.QRect(62, 388, 665, 172), VN_HTML)
+        self.en_block = GlowText(self.centralwidget, QtCore.QRect(48, 178, 693, 188), EN_HTML)
+        self.vn_block = GlowText(self.centralwidget, QtCore.QRect(48, 384, 693, 188), VN_HTML)
         self.divider = QtWidgets.QFrame(self.centralwidget)
         self.divider.setGeometry(150, 372, 490, 2)
         self.divider.setStyleSheet(
@@ -318,28 +325,34 @@ class Ui_MainWindow(object):
             f'<span style="{tag}">&nbsp;NHẤN &amp; GIỮ&nbsp;</span>{HINT_VN[len("NHẤN & GIỮ"):]}</div></div>'))
         self.hint._glow = 0.2
         self.arrow = ArrowDown(self.centralwidget, ARROW_X, 699)
-        self.key_label = QtWidgets.QLabel(
-            f'<div style="color:{GREEN}; font-size:15px; font-weight:800;">{KEY_EN} &nbsp;·&nbsp; {KEY_VN}</div>'
-            f'<div style="color:{GRAY}; font-size:12px; font-weight:600;">{HINT_ZH}</div>'
-            f'<div style="color:{GRAY}; font-size:12px; font-weight:600;">{HINT_ES}</div>', self.centralwidget)
+        def key_html(k):
+            return (f'<div style="color:{GREEN}; font-size:{15 * k}px; font-weight:800;">{KEY_EN} &nbsp;·&nbsp; {KEY_VN}</div>'
+                    f'<div style="color:{GRAY}; font-size:{12 * k}px; font-weight:600;">{HINT_ZH}</div>'
+                    f'<div style="color:{GRAY}; font-size:{12 * k}px; font-weight:600;">{HINT_ES}</div>')
+        self.key_label = QtWidgets.QLabel(self._fit_html(key_html, 440, 54), self.centralwidget)
+        self.key_label.setTextFormat(Qt.TextFormat.RichText)
+        self.key_label.setWordWrap(True)
         self.key_label.setGeometry(ARROW_X + 44, 712, 440, 54)
         self.key_label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        # ---- Hai mã QR ở góc phải phía dưới ----
-        self.qr_host_tile, self.qr_host_text = self._make_qr(
-            770, "qr_host.png",
-            '<div style="color:%s; font-size:14px; font-weight:800;">Scan the website to talk directly with the host</div>'
-            '<div style="color:%s; font-size:12px; font-weight:600;">(choose <b>Quick chat</b> in the left corner of the website)</div>'
-            '<div style="color:%s; font-size:13px; font-weight:700; margin-top:5px;">Quét mã web để nói chuyện trực tiếp với host</div>'
-            '<div style="color:%s; font-size:12px; font-weight:600;">(chọn <b>Chat nhanh</b> ở góc trái website)</div>'
-            % (GREEN, GRAY, WHITE, GRAY), 176)
-        self.qr_bank_tile, self.qr_bank_text = self._make_qr(
-            1092, "qr_bank.png",
-            '<div style="color:%s; font-size:14px; font-weight:800;">QR for money transfer</div>'
-            '<div style="color:%s; font-size:13px; font-weight:700;">MÃ QR chuyển tiền</div>'
-            '<div style="color:%s; font-size:14px; font-weight:800; margin-top:5px;">TPBank</div>'
-            '<div style="color:%s; font-size:14px; font-weight:800;">1000 1689 000</div>'
-            '<div style="color:%s; font-size:12px; font-weight:600;">BIET THU DU LICH VUON CO TICH</div>' % (GREEN, WHITE, WHITE, WHITE, GRAY), 138)
+        # ---- Hai mã QR ở góc phải phía dưới (chữ tự co cho vừa khung theo phông thật của máy) ----
+        def host_html(k):
+            return ('<div style="color:%s; font-size:%dpx; font-weight:800;">Scan the website to talk directly with the host</div>'
+                    '<div style="color:%s; font-size:%dpx; font-weight:600;">(choose <b>Quick chat</b> in the left corner of the website)</div>'
+                    '<div style="color:%s; font-size:%dpx; font-weight:700; margin-top:5px;">Quét mã web để nói chuyện trực tiếp với host</div>'
+                    '<div style="color:%s; font-size:%dpx; font-weight:600;">(chọn <b>Chat nhanh</b> ở góc trái website)</div>'
+                    % (GREEN, 14 * k, GRAY, 12 * k, WHITE, 13 * k, GRAY, 12 * k))
+
+        def bank_html(k):
+            return ('<div style="color:%s; font-size:%dpx; font-weight:800;">QR for money transfer</div>'
+                    '<div style="color:%s; font-size:%dpx; font-weight:700;">MÃ QR chuyển tiền</div>'
+                    '<div style="color:%s; font-size:%dpx; font-weight:800; margin-top:5px;">TPBank</div>'
+                    '<div style="color:%s; font-size:%dpx; font-weight:800;">1000 1689 000</div>'
+                    '<div style="color:%s; font-size:%dpx; font-weight:600;">BIET THU DU LICH VUON CO TICH</div>'
+                    % (GREEN, 14 * k, WHITE, 13 * k, WHITE, 14 * k, WHITE, 14 * k, GRAY, 12 * k))
+
+        self.qr_host_tile, self.qr_host_text = self._make_qr(770, "qr_host.png", host_html, 196)
+        self.qr_bank_tile, self.qr_bank_text = self._make_qr(1094, "qr_bank.png", bank_html, 156)
 
         # Bọc giao diện 1376x768 trong một khung nhìn để tự co giãn theo cửa sổ (giữ đúng tỉ lệ)
         self.view = FitView(MainWindow)
@@ -370,17 +383,35 @@ class Ui_MainWindow(object):
         self.switch_type_language()
         self._start_animations()
 
-    def _make_qr(self, x, image, html, text_w=132):
+    QR_Y, QR_H, QR_TILE = 592, 176, 112          # vùng QR: từ y=592 đến 768
+
+    def _fit_html(self, html_fn, width, height):
+        """Chọn cỡ chữ lớn nhất (tối đa 100%) để toàn bộ chữ nằm vừa khung width x height với phông đang dùng."""
+        family = FONT_FAMILY if FONT_FAMILY in QtGui.QFontDatabase.families() else QtGui.QFont().family()
+        for pct in range(100, 49, -5):
+            k = pct / 100.0
+            doc = QtGui.QTextDocument()
+            doc.setDefaultFont(QtGui.QFont(family))
+            doc.setDocumentMargin(0)
+            doc.setHtml(html_fn(_ScaleK(k)))
+            doc.setTextWidth(width)
+            if doc.size().height() <= height:
+                break
+        return html_fn(_ScaleK(k))
+
+    def _make_qr(self, x, image, html_fn, text_w=160):
         """Ô trắng chứa mã QR (vùng yên tĩnh trắng giúp quét dễ) + chú thích bên phải."""
+        t = self.QR_TILE
         tile = QtWidgets.QLabel(self.centralwidget)
-        tile.setGeometry(x, 612, 132, 132)
+        tile.setGeometry(x, self.QR_Y + (self.QR_H - t) // 2, t, t)
         tile.setStyleSheet("background:#FFFFFF; border-radius:10px;")
         tile.setAlignment(ALIGN_CENTER)
         pm = QtGui.QPixmap(os.path.join(BASE, image))
-        tile.setPixmap(pm.scaled(120, 120, Qt.AspectRatioMode.KeepAspectRatio,
+        tile.setPixmap(pm.scaled(t - 10, t - 10, Qt.AspectRatioMode.KeepAspectRatio,
                                  Qt.TransformationMode.SmoothTransformation))
-        text = QtWidgets.QLabel(html, self.centralwidget)
-        text.setGeometry(x + 138, 603, text_w, 154)
+        text = QtWidgets.QLabel(self._fit_html(html_fn, text_w, self.QR_H - 4), self.centralwidget)
+        text.setTextFormat(Qt.TextFormat.RichText)
+        text.setGeometry(x + t + 8, self.QR_Y, text_w, self.QR_H)
         text.setWordWrap(True)
         text.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         text.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
