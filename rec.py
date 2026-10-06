@@ -520,10 +520,13 @@ def load_models():
     threading.Thread(target=_tts_selftest, daemon=True).start()
 
 
+MAX_GAIN = 8.0              # khuếch đại tối đa khi micro nhỏ (khuếch đại quá tay làm tiếng ồn giống tiếng nói)
+
+
 def _normalize(audio):
     peak = float(np.max(np.abs(audio))) if audio.size else 0.0
-    if 0.001 < peak < 0.6:                       # micro nhỏ -> khuếch đại để nghe rõ hơn
-        audio = np.clip(audio * (0.9 / peak), -1.0, 1.0).astype(np.float32)
+    if 0.001 < peak < 0.6:                       # micro nhỏ -> khuếch đại có giới hạn để nghe rõ hơn
+        audio = np.clip(audio * min(0.9 / peak, MAX_GAIN), -1.0, 1.0).astype(np.float32)
     return audio
 
 
@@ -537,9 +540,22 @@ def _wav_bytes(audio):
     return buf.getvalue()
 
 
+_HALLUCINATIONS = (                          # câu Whisper hay bịa ra khi chỉ có im lặng / tiếng ồn (học từ phụ đề YouTube)
+    "subscribe", "đăng ký kênh", "dang ky kenh", "ghiền mì gõ", "ghien mi go", "đừng quên đăng ký", "để không bỏ lỡ",
+    "hẹn gặp lại các bạn trong", "cảm ơn các bạn đã xem", "cảm ơn các bạn đã theo dõi", "like và share", "bấm like",
+    "thanks for watching", "thank you for watching", "thank you so much for watching", "see you in the next video",
+    "like and subscribe", "don't forget to subscribe", "amara.org", "subtitles by", "sous-titres", "sous-titrage",
+    "subtítulos", "gracias por ver", "merci d'avoir regardé", "字幕", "请订阅", "请不吝点赞", "感谢观看", "谢谢观看",
+    "ご視聴ありがとう", "チャンネル登録", "시청해 주셔서", "구독과 좋아요",
+)
+
+
 def _drop_prompt_echo(text):
-    """Bỏ kết quả chỉ là lặp lại câu gợi ý (Whisper bịa khi không nghe rõ)."""
-    t = re.sub(r"[\W_]+", " ", text.lower()).strip()
+    """Bỏ kết quả Whisper bịa: lặp lại câu gợi ý, hoặc là câu 'đăng ký kênh/cảm ơn đã xem' quen thuộc."""
+    low = text.lower()
+    if any(h in low for h in _HALLUCINATIONS):
+        return ""
+    t = re.sub(r"[\W_]+", " ", low).strip()
     hint = re.sub(r"[\W_]+", " ", WHISPER_HINT_VI.lower())
     return "" if t and t in hint else text
 
@@ -707,11 +723,28 @@ def warn_hold(gen, lang):
         speak(gen, WARN_HOLD['vi'], 'vi', cached=True)
 
 
-SILENT_PEAK = 0.004         # biên độ đỉnh dưới mức này (khoảng -48 dBFS) = gần như không có tiếng
+SPEECH_RMS = 0.006          # mức năng lượng (RMS) tối thiểu của tiếng nói, khoảng -44 dBFS. Micro rất nhỏ -> giảm; môi trường ồn -> tăng
+MIN_SPEECH_FRAMES = 8       # tối thiểu 8 khung 30ms (khoảng 0,25 giây) có tiếng nói
+_FRAME = 480                # 30 ms ở 16 kHz
 
 
-def is_silent(audio):
-    return audio.size == 0 or float(np.max(np.abs(audio))) < SILENT_PEAK
+def analyze_audio(audio):
+    """Phân tích nhanh bằng năng lượng. Trả về (có_tiếng_nói, audio_đã_cắt_lặng, thông_số_để_in_log)."""
+    n = audio.size // _FRAME
+    if n < 3:
+        return False, audio, {"peak": 0.0, "p95": 0.0, "p10": 0.0, "frames": 0}
+    rms = np.sqrt(np.mean(audio[:n * _FRAME].reshape(n, _FRAME) ** 2, axis=1))
+    p95, p10 = float(np.percentile(rms, 95)), float(np.percentile(rms, 10))
+    thr = max(SPEECH_RMS * 0.6, p10 * 3.0)
+    idx = np.where(rms > thr)[0]
+    info = {"peak": float(np.max(np.abs(audio))), "p95": p95, "p10": p10, "frames": int(idx.size)}
+    contrast = p95 / max(p10, 1e-5)
+    ok = p95 >= SPEECH_RMS and (contrast >= 2.0 or p95 >= 0.03) and idx.size >= MIN_SPEECH_FRAMES
+    if not ok:
+        return False, audio, info
+    pad = 8                                                  # giữ thêm khoảng 0,25 giây ở hai đầu cho tự nhiên
+    a, b = max(0, int(idx[0]) - pad), min(n, int(idx[-1]) + 1 + pad)
+    return True, audio[a * _FRAME:b * _FRAME], info
 
 
 def report_error(gen, lang, where, e):
@@ -802,7 +835,9 @@ def finish_recording(rid):
         return
 
     audio = np.concatenate(r["frames"], axis=0).reshape(-1).astype(np.float32)
-    if is_silent(audio):                                   # nhấn giữ đủ lâu nhưng không có tiếng nói
+    has_speech, audio, info = analyze_audio(audio)
+    print(f"[Mic] đỉnh={info['peak']:.3f}  rms95={info['p95']:.4f}  rms10={info['p10']:.4f}  khung_có_tiếng={info['frames']}  -> {'CÓ tiếng nói' if has_speech else 'KHÔNG có tiếng nói'}")
+    if not has_speech:                                     # nhấn giữ đủ lâu nhưng không có tiếng nói (im lặng / chỉ tiếng ồn)
         safe_print(msg('no_speech', shown))
         warn_hold(gen, lang)
         mail.add("empty", shown)
