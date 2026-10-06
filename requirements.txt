@@ -1,0 +1,10 @@
+numpy
+sounddevice
+keyboard
+anthropic
+pygame
+PyQt6
+faster-whisper
+edge-tts
+gTTS
+groq
